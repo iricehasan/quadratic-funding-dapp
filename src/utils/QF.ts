@@ -1,14 +1,16 @@
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { QuadraticFundingAlgorithm, Expiration, Timestamp, Uint64, InstantiateMsg, ExecuteMsg, Binary, Uint128, QueryMsg, AllProposalsResponse, Proposal } from "./QF.types";
-
+import { ToastError, ToastSuccess } from "../App/components/alert/SweetAlert";
 
 export class QFContract {
   contractAddress: string;
   signingClient: SigningCosmWasmClient;
+  senderAddress: string;
 
-  constructor(contractAddress: string, signingClient: SigningCosmWasmClient) {
+  constructor(contractAddress: string, signingClient: SigningCosmWasmClient, senderAddress: string) {
     this.contractAddress = contractAddress;
     this.signingClient = signingClient;
+    this.senderAddress = senderAddress;
   }
 
   /*
@@ -37,27 +39,73 @@ export class QFContract {
     return allProposals;
   }
 
-  /*
-  async executePing(senderAddress: string): Promise<string> {
-    const res = await this.signingClient.execute(
-      senderAddress,
-      this.contractAddress,
-      { ping: {} }
-    );
+  
+  async createProposal(description: string, fundAddress: string, owner: string, title: string) {
+    try {
+      const res = await this.signingClient.execute(
+        this.senderAddress,
+        this.contractAddress,
+        { create_proposal: { description, fund_address: fundAddress, owner: this.senderAddress, title } },
+        "auto",
+        "",
+        []
+      );
 
-    for (const { events } of res.logs) {
-      for (const { attributes } of events) {
-        const pongAttribute = attributes.find(
-          (attribute) => attribute.key === "pong"
-        );
+      ToastSuccess({
+        tHashLink: res?.transactionHash,
+      }).fire({ title: "Transfer successful" });
 
-        if (pongAttribute?.key === "pong" && pongAttribute?.value === "pong") {
-          return res.transactionHash;
-        }
-      }
+      return res ? { transactionHash: res?.transactionHash } : false;
+    } catch (error) {
+      console.error("Error transferring token:", error);
+      ToastError.fire({ title: "Transfer failed" });
+      return false;
     }
-
-    throw new Error("pong event not found in tx result");
   }
-  */
+
+  async voteProposal(proposalId: string, sentVote: string) {
+    try {
+      const res = await this.signingClient.execute(
+        this.senderAddress,
+        this.contractAddress,
+        { send_vote: { proposal_id: proposalId, sent_vote: sentVote} },
+        "auto",
+        "",
+        []
+      );
+
+      ToastSuccess({
+        tHashLink: res?.transactionHash,
+      }).fire({ title: "Transfer successful" });
+
+      return res ? { transactionHash: res?.transactionHash } : false;
+    } catch (error) {
+      console.error("Error transferring token:", error);
+      ToastError.fire({ title: "Transfer failed" });
+      return false;
+    }
+  }
+
+  async changeVote(proposalId: string, sentVote: string) {
+    try {
+      const res = await this.signingClient.execute(
+        this.senderAddress,
+        this.contractAddress,
+        { send_vote: { proposal_id: proposalId, sent_vote: sentVote} },
+        "auto",
+        "",
+        []
+      );
+
+      ToastSuccess({
+        tHashLink: res?.transactionHash,
+      }).fire({ title: "Transfer successful" });
+
+      return res ? { transactionHash: res?.transactionHash } : false;
+    } catch (error) {
+      console.error("Error transferring token:", error);
+      ToastError.fire({ title: "Transfer failed" });
+      return false;
+    }
+  }
 }

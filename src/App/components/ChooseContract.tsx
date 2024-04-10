@@ -30,7 +30,7 @@ export default function ChooseContract({
             className="bg-indigo-500 text-white font-medium text-sm mt-3 py-1 px-5 rounded"
             onClick={() =>
               setQFInstance(
-                new QFContract(contractAddress, signingClient)
+                new QFContract(contractAddress, signingClient, userAddress)
               )
             }
           >
