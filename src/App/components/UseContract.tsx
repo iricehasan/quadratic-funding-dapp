@@ -2,6 +2,7 @@ import * as React from "react";
 import { getErrorFromStackTrace } from "../../utils/errors";
 import { QFContract } from "../../utils/QF";
 import { AllProposalsResponse } from "../../utils/QF.types";
+import classNames from 'classnames';
 
 interface UseContractProps {
   readonly userAddress: string;
@@ -63,7 +64,6 @@ export default function UseContract({
     try {
       const res = await QFInstance.voteProposal(proposalId, sentVote);
       if (res && res.transactionHash) {
-        // Refresh all proposals after voting
         setVoteProposalResult(res.transactionHash);
         queryAllProposals();
       }
@@ -76,7 +76,6 @@ export default function UseContract({
     try {
       const res = await QFInstance.changeVote(proposalId, sentVote);
       if (res && res.transactionHash) {
-        // Refresh all proposals after changing vote
         setChangeVoteResult(res.transactionHash);
         queryAllProposals();
       }
@@ -90,78 +89,80 @@ export default function UseContract({
   }, [queryAllProposals]);
 
   return (
-    <div>
-      <div className="w-96 rounded-lg overflow-hidden shadow-lg bg-gray-700 border border-purple-700 m-4 flex flex-col">
-        <div className="p-6 flex-grow">
-          <div className="text-white font-medium text-xl mb-2">All Proposals</div>
-          {allProposals ? (
-            <ul>
-              {Object.entries(allProposals).map(([proposalId, proposal]) => (
-                <li key={proposalId}>
-                  <p>{proposalId}</p>
-                  <p>{JSON.stringify(proposal)}</p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Loading...</p>
-          )}
-          <button
-            className="bg-indigo-500 text-white font-medium text-sm mt-3 py-1 px-5 rounded"
-            onClick={() => queryAllProposals()}
-          >
-            Refresh All Proposals
-          </button>
-        </div>
-        <div className="p-6 border-t border-purple-700 flex-grow">
-          <form onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="description">Description:</label>
-              <input type="text" id="description" name="description" value={description} onChange={handleChange} />
-            </div>
-            <div>
-              <label htmlFor="fundAddress">Fund Address:</label>
-              <input type="text" id="fundAddress" name="fundAddress" value={fundAddress} onChange={handleChange} />
-            </div>
-            <div>
-              <label htmlFor="title">Title:</label>
-              <input type="text" id="title" name="title" value={title} onChange={handleChange} />
-            </div>
-            <button type="submit" className="bg-green-500 text-white font-medium text-sm mt-3 py-1 px-5 rounded">
-              Create Proposal
-            </button>
-          </form>
-          {createProposalResult && (
-            <div>
-              <p>Received pong with hash:</p>
-              <p className="break-words text-white text-sm">{createProposalResult}</p>
-            </div>
-          )}
-          {(voteProposalResult || changeVoteResult) && (
-            <div>
-              <p>Received pong with hash:</p>
-              <p className="break-words text-white text-sm">{voteProposalResult || changeVoteResult}</p>
-            </div>
-          )}
-          <div className="p-6 border-t border-purple-700 flex-grow">
-            <form onSubmit={(e) => e.preventDefault()}>
-              <div>
-                <label htmlFor="proposalId">Proposal ID:</label>
-                <input type="text" id="proposalId" name="proposalId" value={proposalId} onChange={handleChange} />
-              </div>
-              <div>
-                <label htmlFor="sentVote">Vote:</label>
-                <input type="text" id="sentVote" name="sentVote" value={sentVote} onChange={handleChange} />
-              </div>
-              <button onClick={voteProposal} className="text-blue-500">
-                Vote
-              </button>
-              <button onClick={changeVote} className="text-yellow-500">
-                Change Vote
-              </button>
-            </form>
+    <div className="w-full rounded-lg overflow-hidden shadow-lg bg-gray-700 m-4">
+      <div className="p-6 flex-grow">
+      <div className="text-white font-medium text-xl mb-2">All Proposals</div>
+        {allProposals && allProposals["proposals"] ? (
+          <ul>
+            {allProposals["proposals"].map((proposal: any) => (
+              <li key={proposal.id} className="border-b border-gray-400 py-4">
+                <p className="text-white">ID: {proposal.id}</p>
+                <p className="text-white">Title: {proposal.title}</p>
+                <p className="text-white">Owner: {proposal.owner}</p>
+                <p className="text-white">Description: {proposal.description}</p>
+                <p className="text-white">Fund Address: {proposal.fund_address}</p>
+                <p className="text-white">Collected Votes: {proposal.collected_votes}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-white">Loading...</p>
+        )}
+        <button
+          className="bg-indigo-500 text-white font-medium text-sm mt-3 py-1 px-5 rounded"
+          onClick={queryAllProposals}
+        >
+          Refresh All Proposals
+        </button>
+      </div>
+      <div className="p-6 border-t border-purple-700 flex-grow">
+        <form onSubmit={handleSubmit} className="mb-4">
+          <div className="input-field">
+            <label htmlFor="description" className="text-white">Description:</label>
+            <input type="text" id="description" name="description" value={description} onChange={handleChange} className="bg-gray-800 border border-gray-600 text-white rounded p-2 w-full" />
           </div>
-        </div>
+          <div className="input-field">
+            <label htmlFor="fundAddress" className="text-white">Fund Address:</label>
+            <input type="text" id="fundAddress" name="fundAddress" value={fundAddress} onChange={handleChange} className="bg-gray-800 border border-gray-600 text-white rounded p-2 w-full" />
+          </div>
+          <div className="input-field">
+            <label htmlFor="title" className="text-white">Title:</label>
+            <input type="text" id="title" name="title" value={title} onChange={handleChange} className="bg-gray-800 border border-gray-600 text-white rounded p-2 w-full" />
+          </div>
+          <button type="submit" className="bg-green-500 text-white font-medium text-sm mt-3 py-1 px-5 rounded">
+            Create Proposal
+          </button>
+        </form>
+        {createProposalResult && (
+          <div className="result">
+            <p>Received pong with hash:</p>
+            <p>{createProposalResult}</p>
+          </div>
+        )}
+      </div>
+      <div className="p-6 border-t border-purple-700 flex-grow">
+        <form className="mb-4">
+          <div className="input-field">
+            <label htmlFor="proposalId" className="text-white">Proposal ID:</label>
+            <input type="text" id="proposalId" name="proposalId" value={proposalId} onChange={handleChange} className="bg-gray-800 border border-gray-600 text-white rounded p-2 w-full" />
+          </div>
+          <div className="input-field">
+            <label htmlFor="sentVote" className="text-white">Vote:</label>
+            <input type="text" id="sentVote" name="sentVote" value={sentVote} onChange={handleChange} className="bg-gray-800 border border-gray-600 text-white rounded p-2 w-full" />
+          </div>
+          <button type="button" onClick={voteProposal} className="bg-blue-500 text-white font-medium text-sm mt-3 py-1 px-5 rounded">
+            Vote
+          </button>
+          <button type="button" onClick={changeVote} className="bg-yellow-500 text-white font-medium text-sm mt-3 ml-2 py-1 px-5 rounded">
+            Change Vote
+          </button>
+        </form>
+        {(voteProposalResult || changeVoteResult) && (
+          <div className="result">
+            <p>Received pong with hash:</p>
+            <p>{voteProposalResult || changeVoteResult}</p>
+          </div>
+        )}
       </div>
     </div>
   );

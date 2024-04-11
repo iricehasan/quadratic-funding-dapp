@@ -36,32 +36,43 @@ export default function App(): JSX.Element {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gray-600 grid grid-cols-1 md:grid-cols-2 content-center justify-items-center">
-      {userAddress && signingClient && (
-        <ChooseContract
-          userAddress={userAddress}
-          signingClient={signingClient}
-          setQFInstance={setQFInstance}
-          setError={setError}
-        />
-      )}
-      {userAddress && signingClient && (
-        <UserAccount
-          userAddress={userAddress}
-          signingClient={signingClient}
-          setError={setError}
-        />
-      )}
+    <main className="min-h-screen bg-gray-600 grid grid-cols-1 md:grid-cols-2 content-center justify-items-center gap-5">
       {userAddress && signingClient && QFInstance && (
-        <UseContract
-          userAddress={userAddress}
-          QFInstance={QFInstance}
-          setError={setError}
-        />
+        <div className="md:w-full">
+          <UseContract 
+            userAddress={userAddress}
+            QFInstance={QFInstance}
+            setError={setError}
+          />
+        </div>
       )}
-      {error ? (
-        <ErrorBanner error={error} clearError={() => setError("")} />
-      ) : null}
+      <div className="md:flex md:flex-col md:items-start md:w-full">
+        {userAddress && signingClient && (
+          <div className="md:w-full">
+            <ChooseContract
+              userAddress={userAddress}
+              signingClient={signingClient}
+              setQFInstance={setQFInstance}
+              setError={setError}
+            />
+          </div>
+        )}
+        {userAddress && signingClient && (
+          <div className="md:w-full">
+            <UserAccount
+              userAddress={userAddress}
+              signingClient={signingClient}
+              setError={setError}
+            />
+          </div>
+        )}
+      </div>
+      {error && (
+        <div>
+          <ErrorBanner error={error} clearError={() => setError("")} />
+        </div>
+      )}
     </main>
   );
-}
+  
+      }  
